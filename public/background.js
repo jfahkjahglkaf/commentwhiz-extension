@@ -1,4 +1,5 @@
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  console.log("Extension installed");
     if (message.action === 'getCurrentTabUrl') {
       chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
         let activeTab = tabs[0];

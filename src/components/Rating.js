@@ -1,7 +1,7 @@
 import React from 'react';
 import { PieChart } from 'react-minimal-pie-chart';
 
-function Rating({ rating }) {
+export function Rating({ rating }) {
     // Decide to show pie chart or numeric rating based on the presence of rating
     if (rating !== null) {
         const pieChartData = [
