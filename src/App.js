@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import { HashRouter as Router, Route, Routes } from "react-router-dom";
 import Extension from "./pages/Extension";
 import Settings from "./pages/Settings";
 import About from "./pages/About";
@@ -18,5 +18,7 @@ function App() {
         </Router>
     );
 }
+
+
 
 export default App; 

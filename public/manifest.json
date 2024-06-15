@@ -7,6 +7,7 @@
     "default_popup": "index.html",
     "default_icon": "ext-icon.png",
     "default_title": "CommentWhiz"
+    
   },
   "permissions": [
     "activeTab",
@@ -16,7 +17,17 @@
   "background": {
     "service_worker": "background.js"
   },
+  "host_permissions": [
+    "http://*/",
+    "https://*/"
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["static/js/*", "static/css/*", "icons/*"],
+      "matches": ["<all_urls>"]
+    }
+  ],
   "content_security_policy": {
-    "extension_pages": "script-src 'self'; object-src 'self'; connect-src 'self' http://localhost:3000/scrape https://api.openai.com"
+    "extension_pages": "script-src 'self'; object-src 'self'; connect-src 'self' http://localhost:3002 https://api.openai.com"
   }
 }

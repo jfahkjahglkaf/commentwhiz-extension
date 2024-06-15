@@ -4,8 +4,10 @@ import { Button } from "../components/Button";
 import { Divider } from "../components/Divider";
 import { Bottom } from "../components/Bottom";
 import { Loader } from "../components/Loader";
+import { Footer } from "../components/Footer";
 import { Response } from "../components/Response";
-import  Rating from "../components/Rating";
+import { Showcase } from "../components/Showcase";
+import { Rating } from "../components/Rating";
 import axios from "axios";
 
 function Extension() {
@@ -13,6 +15,8 @@ function Extension() {
     const [response, setResponse] = useState("");
     useEffect(() => {}, [loading, response]);
     const [overallRatings, setOverallRatings] = useState(null);
+
+    console.log("Rendering Extension1");
     
     function checkIfProductPage() {
         chrome.runtime.sendMessage({ action: 'getCurrentTabUrl' }, async (response) => {
@@ -81,19 +85,24 @@ function Extension() {
         // add integration parts  
     } 
 
+    console.log("Rendering Extension2");
+
     return (
-        <Container.Outer customStyles={{ backgroundColor: 'lime-700' }} showIcon={true} showHeader={true}>
-            <Container.Inner customStyles={{ backgroundColor: '#e0e0e0', padding: 50, borderRadius: '3rem', minHeight: '500px' }}>
-                <Button onClick={onClick} disabled={checkIfProductPage} text="Scan comments now!" />
+        <Container.Outer className="flex flex-col min-h-screen" showIcon={true} showHeader={true} customStyles={{ minWidth: '300px', width: '100%', maxWidth: '600px', margin: '0 auto' }}>
+            <Container.Inner className="flex flex-col flex-grow p-4" customStyles={{ backgroundColor: '#e0e0e0', padding: 50, borderRadius: '3rem', minHeight: '500px' }}>
+                <Button onClick={onClick} text="Scan comments now!" className="w-full py-4 text-xl font-bold bg-blue-600 text-white rounded-lg transition-all hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300" />
                 <Divider />
-                {loading ? <Loader /> : <Response response={response} />}
-                <Rating rating={overallRatings} /> 
-                <Bottom />
+                <div className="flex-grow">
+                    {loading ? <Loader /> : <Response response={response} />}
+                    <Rating rating={overallRatings} />
+                </div>
+                <div className="mt-auto">
+                    <Bottom />
+                </div>
             </Container.Inner>
+            <Footer />
         </Container.Outer>
     );
-    
-    
 }
 
 export default Extension;

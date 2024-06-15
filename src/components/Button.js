@@ -5,9 +5,9 @@ export function Button({ onClick, text, className, disabled }) {
     
     return (
         <button
-            className={`relative px-4 py-2 text-sm font-medium bg-transparent border-2 rounded-lg transition ${disabledClasses} ${className}`}
+            className={`relative px-4 py-2 text-sm font-medium bg-custom-blue text-white border-2 rounded-lg transition ${className}`}
             onClick={onClick}
-            disabled={disabled}
+            //disabled={disabled}
         >
             {text}
         </button>

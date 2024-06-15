@@ -1,17 +1,17 @@
 // tailwind.config.js
 module.exports = {
-  content: [
-      "./src/**/*.{js,jsx,ts,tsx}",
-      'node_modules/flowbite-react/lib/esm/**/*.js',
-  ],
-  theme: {
-      extend: {
-          colors: {
-              'custom-green': '#53a079',
-          },
-      },
-  },
-  plugins: [
-    
-  ],
+    content: [
+        "./src/**/*.{js,jsx,ts,tsx}",
+    ],
+    theme: {
+        extend: {
+            colors: {
+                'custom-green': '#5CDB95',
+                'custom-darkgreen': '#379652',
+                'custom-blue': '#05386B',
+                'custom-lightblue': '#EDF5E1',
+            },
+        },
+    },
+    plugins: [],
 }
