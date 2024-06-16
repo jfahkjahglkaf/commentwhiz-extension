@@ -38,7 +38,7 @@ function Extension() {
             if (response.url) {
                 try {
                     // Step 1: Use async/await with axios.post
-                    const res = await axios.post('http://localhost:3000/scrape', { url: response.url });
+                    const res = await axios.post('http://localhost:3001/scrape', { url: response.url });
                     console.log('URL sent successfully:', res.data);
     
                     // Step 2: Extract the "overall_ratings" value
