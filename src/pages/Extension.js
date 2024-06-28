@@ -15,8 +15,16 @@ function Extension() {
     const [response, setResponse] = useState("");
     useEffect(() => {}, [loading, response]);
     const [overallRatings, setOverallRatings] = useState(null);
-
     console.log("Rendering Extension1");
+    function isValidUrl(url) {
+        try {
+          const parsedUrl = new URL(url);
+          return parsedUrl.protocol === 'http:' || parsedUrl.protocol === 'https:';
+        } catch (error) {
+          // The URL constructor throws a TypeError if the URL is invalid
+          return false;
+        }
+    }
     
     function checkIfProductPage() {
         chrome.runtime.sendMessage({ action: 'getCurrentTabUrl' }, async (response) => {
@@ -35,10 +43,10 @@ function Extension() {
         setResponse("");
         setLoading(true);
         chrome.runtime.sendMessage({ action: 'getCurrentTabUrl' }, async (response) => { 
-            if (response.url) {
+            if (response.url && isValidUrl(response.url) {
                 try {
                     // Step 1: Use async/await with axios.post
-                    const res = await axios.post('https://localhost:3001/scrape', { url: response.url });
+                    const res = await axios.post('http://localhost:3001/scrape', { url: response.url });
                     console.log('URL sent successfully:', res.data);
     
                     // Step 2: Extract the "overall_ratings" value
