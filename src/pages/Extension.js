@@ -88,9 +88,9 @@ function Extension() {
     console.log("Rendering Extension2");
 
     return (
-        <Container.Outer className="flex flex-col min-h-screen" showIcon={true} showHeader={true} customStyles={{ minWidth: '300px', width: '100%', maxWidth: '600px', margin: '0 auto' }}>
-            <Container.Inner className="flex flex-col flex-grow p-4" customStyles={{ backgroundColor: '#e0e0e0', padding: 50, borderRadius: '3rem', minHeight: '500px' }}>
-                <Button onClick={onClick} text="Scan comments now!" className="w-full py-4 text-xl font-bold bg-blue-600 text-white rounded-lg transition-all hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300" />
+        <Container.Outer className="flex flex-col min-h-screen" showIcon={true} showHeader={true} customStyles={{ minWidth: '300px', width: '100%', maxWidth: '400px', margin: '0 auto', maxHeight: '400px'}}>
+            <Container.Inner className="flex flex-col flex-grow p-4" customStyles={{ padding: 40, borderRadius: '3rem', minHeight: '350px', maxHeight: '350px' }}>
+                <Button onClick={onClick} text="Scan comments now!" className="w-full py-4 text-xl font-bold text-white rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-blue-300" />
                 <Divider />
                 <div className="flex-grow">
                     {loading ? <Loader /> : <Response response={response} />}
