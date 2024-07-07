@@ -23,12 +23,38 @@ function Extension() {
             if (response.url) {
                 const url = response.url;
                 const isAmazonProductPage = /^https?:\/\/(www\.)?amazon\.[a-z\.]{2,6}(\/d\/|\/dp\/|\/gp\/product\/)/.test(url);
-                //const isProductPage = /\/(\d+|[a-z0-9-]+)$/.test(url);  // work in progress for other product pages (e.g. ebay, walmart, etc.) 
+                //const isProductPage = /\/(\d+|[a-z0-9-]+)$/.test(url);  // work in progress for other product pages (e.g. ebay, walmart, etc.)
                 const disableButton = !isAmazonProductPage;
                 return disableButton;
             }
         }
         )}
+
+    function cleanAmazonUrl(url) {
+        try {
+            // Create a URL object
+            let urlObj = new URL(url);
+
+            // Extract the path parts
+            let pathParts = urlObj.pathname.split('/');
+
+            // Find the ASIN (usually after "/dp/")
+            let asinIndex = pathParts.indexOf('dp');
+            if (asinIndex === -1 || asinIndex + 1 >= pathParts.length) {
+                throw new Error("ASIN not found");
+            }
+
+            let asin = pathParts[asinIndex + 1];
+
+            // Construct the clean URL
+            let cleanUrl = `${urlObj.origin}/dp/${asin}`;
+
+            return cleanUrl;
+        } catch (error) {
+            console.error(error.message);
+            return url;  // Return the original URL if an error occurs
+        }
+    }
 
     const runScrapingScript = async () => {
         setOverallRatings(null);
@@ -37,8 +63,11 @@ function Extension() {
         chrome.runtime.sendMessage({ action: 'getCurrentTabUrl' }, async (response) => { 
             if (response.url) {
                 try {
+                    // Clean the URL before sending
+                    const cleanUrl = cleanAmazonUrl(response.url);
+
                     // Step 1: Use async/await with axios.post
-                    const res = await axios.post('https://localhost:3001/scrape', { url: response.url });
+                    const res = await axios.post('https://localhost:3001/scrape', { url: cleanUrl });
                     console.log('URL sent successfully:', res.data);
     
                     // Step 2: Extract the "overall_ratings" value
