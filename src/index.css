@@ -3,17 +3,18 @@
 @tailwind utilities;
 
 html, body {
-  background-color: #5CDB95;
+  background-color: #379392;
   margin: 0;
   font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  width: 500px; /* Set the desired width */
-    height: 400px; /* Set the desired height */
-    margin: 0;
-    padding: 0;
+  width: 100%; 
+  height: 100%; 
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 #root {
