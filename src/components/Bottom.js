@@ -3,11 +3,11 @@ import { FaHome, FaInfoCircle, FaCog } from 'react-icons/fa';
 import { Button as FlowbiteButton } from "flowbite-react";
 import { HiExternalLink } from "react-icons/hi";
 
-export function Bottom() {
+export function Bottom({ tabURL }) {
     return (
         <div className="w-full mt-auto">
             <div className="flex justify-end items-center space-x-2">
-                <a href="https://localhost:3000/report" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', color: 'black' }}>
+                    <a href={`https://localhost:3000/report/${encodeURIComponent(tabURL)}`} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', color: 'black' }}>
                     <FlowbiteButton className='text-black'>
                         Open Report
                         <HiExternalLink className='ml-2 h-5 w-5 text-black' />

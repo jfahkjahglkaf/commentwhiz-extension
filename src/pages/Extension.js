@@ -13,11 +13,11 @@ import axios from "axios";
 function Extension() {
     const [loading, setLoading] = useState(false);
     const [response, setResponse] = useState("");
-    useEffect(() => {}, [loading, response]);
+    useEffect(() => { }, [loading, response]);
     const [overallRatings, setOverallRatings] = useState(null);
-
+    const [URL, setURL] = useState(null);
     console.log("Rendering Extension1");
-    
+
     function checkIfProductPage() {
         chrome.runtime.sendMessage({ action: 'getCurrentTabUrl' }, async (response) => {
             if (response.url) {
@@ -28,7 +28,8 @@ function Extension() {
                 return disableButton;
             }
         }
-        )}
+        )
+    }
 
     function cleanAmazonUrl(url) {
         try {
@@ -60,16 +61,16 @@ function Extension() {
         setOverallRatings(null);
         setResponse("");
         setLoading(true);
-        chrome.runtime.sendMessage({ action: 'getCurrentTabUrl' }, async (response) => { 
+        chrome.runtime.sendMessage({ action: 'getCurrentTabUrl' }, async (response) => {
             if (response.url) {
                 try {
                     // Clean the URL before sending
                     const cleanUrl = cleanAmazonUrl(response.url);
-
+                    setURL(cleanUrl);
                     // Step 1: Use async/await with axios.post
                     const res = await axios.post('https://localhost:3001/scrape', { url: cleanUrl });
                     console.log('URL sent successfully:', res.data);
-    
+
                     // Step 2: Extract the "overall_ratings" value
                     const Enhanced_Rating = res.data['Enhanced Rating'];
                     if (Enhanced_Rating !== undefined) {
@@ -82,23 +83,23 @@ function Extension() {
                         const resp = await axios.post('https://api.openai.com/v1/engines/gpt-3.5-turbo-instruct/completions', {
                             prompt,
                             max_tokens: 150
-                          }, 
-                          {
-                            headers: {
-                              'Authorization': `Bearer ${openAiApiKey}`,
-                              'Content-Type': 'application/json'
-                            }
-                          });
-                          if (resp.data && resp.data.choices && resp.data.choices.length > 0) {
+                        },
+                            {
+                                headers: {
+                                    'Authorization': `Bearer ${openAiApiKey}`,
+                                    'Content-Type': 'application/json'
+                                }
+                            });
+                        if (resp.data && resp.data.choices && resp.data.choices.length > 0) {
                             const plainTextResponse = resp.data.choices[0].text.trim(); //extract plaintext and trims trailing whitespace
                             setLoading(false);
                             setResponse(plainTextResponse); // Store the plain text response
-                            } 
-                            else {
-                                console.error('No response text found');
-                                setLoading(false);
-                                setResponse('No response text found');
-                            }
+                        }
+                        else {
+                            console.error('No response text found');
+                            setLoading(false);
+                            setResponse('No response text found');
+                        }
                     }
                 } catch (err) {
                     setLoading(false);
@@ -108,16 +109,16 @@ function Extension() {
             }
         });
     };
-    
+
     const onClick = () => {
         runScrapingScript();
         // add integration parts  
-    } 
+    }
 
     console.log("Rendering Extension2");
 
     return (
-        <Container.Outer className="flex flex-col min-h-screen" showIcon={true} showHeader={true} customStyles={{ minWidth: '300px', width: '100%', maxWidth: '400px', margin: '0 auto', maxHeight: '400px'}}>
+        <Container.Outer className="flex flex-col min-h-screen" showIcon={true} showHeader={true} customStyles={{ minWidth: '300px', width: '100%', maxWidth: '400px', margin: '0 auto', maxHeight: '400px' }}>
             <Container.Inner className="flex flex-col flex-grow p-4" customStyles={{ padding: 40, borderRadius: '3rem', minHeight: '350px', maxHeight: '350px' }}>
                 <Button onClick={onClick} text="Scan comments now!" className="w-full py-4 text-xl font-bold text-white rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-blue-300" />
                 <Divider />
@@ -126,7 +127,7 @@ function Extension() {
                     <Rating rating={overallRatings} />
                 </div>
                 <div className="mt-auto">
-                    <Bottom />
+                    <Bottom tabURL={URL} />
                 </div>
             </Container.Inner>
             <Footer />
