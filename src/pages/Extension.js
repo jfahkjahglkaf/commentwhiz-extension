@@ -15,7 +15,8 @@ function Extension() {
     const [response, setResponse] = useState("");
     useEffect(() => { }, [loading, response]);
     const [overallRatings, setOverallRatings] = useState(null);
-    const [URL, setURL] = useState(null);
+    const [amzURL, setAmzURL] = useState(null);
+
     console.log("Rendering Extension1");
 
     function checkIfProductPage() {
@@ -66,9 +67,10 @@ function Extension() {
                 try {
                     // Clean the URL before sending
                     const cleanUrl = cleanAmazonUrl(response.url);
-                    setURL(cleanUrl);
+
                     // Step 1: Use async/await with axios.post
                     const res = await axios.post('https://localhost:3001/scrape', { url: cleanUrl });
+                    setAmzURL(cleanUrl);
                     console.log('URL sent successfully:', res.data);
 
                     // Step 2: Extract the "overall_ratings" value
@@ -127,7 +129,7 @@ function Extension() {
                     <Rating rating={overallRatings} />
                 </div>
                 <div className="mt-auto">
-                    <Bottom tabURL={URL} />
+                    <Bottom tabURL={amzURL} />
                 </div>
             </Container.Inner>
             <Footer />
