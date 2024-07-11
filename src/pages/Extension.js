@@ -15,7 +15,9 @@ function Extension() {
     const [response, setResponse] = useState("");
     useEffect(() => {}, [loading, response]);
     const [overallRatings, setOverallRatings] = useState(null);
+    const [amazonUrl, setAmazonUrl] = useState(null);
     console.log("Rendering Extension1");
+
     function isValidUrl(url) {
         try {
           const parsedUrl = new URL(url);
@@ -25,18 +27,20 @@ function Extension() {
           return false;
         }
     }
-    
-    function checkIfProductPage() {
-        chrome.runtime.sendMessage({ action: 'getCurrentTabUrl' }, async (response) => {
-            if (response.url) {
-                const url = response.url;
-                const isAmazonProductPage = /^https?:\/\/(www\.)?amazon\.[a-z\.]{2,6}(\/d\/|\/dp\/|\/gp\/product\/)/.test(url);
-                //const isProductPage = /\/(\d+|[a-z0-9-]+)$/.test(url);  // work in progress for other product pages (e.g. ebay, walmart, etc.) 
-                const disableButton = !isAmazonProductPage;
-                return disableButton;
-            }
-        }
-        )}
+
+    function disableButton() {
+        return new Promise((resolve, reject) => {
+            chrome.runtime.sendMessage({ action: 'getCurrentTabUrl' }, (response) => {
+                if (response.url) {
+                    const url = response.url;
+                    const isAmazonPage = /^https?:\/\/(www\.)?amazon\.[a-z\.]{2,6}(\/d\/|\/dp\/|\/gp\/product\/)/.test(url);
+                    resolve(!isAmazonPage); // Resolve the promise with true or false
+                } else {
+                    reject(new Error("Failed to get current tab URL"));
+                }
+            });
+        });
+    }
 
     function cleanAmazonUrl(url) {
         try {
@@ -69,17 +73,13 @@ function Extension() {
         setResponse("");
         setLoading(true);
         chrome.runtime.sendMessage({ action: 'getCurrentTabUrl' }, async (response) => { 
-            if (response.url && isValidUrl(response.url) {
+            if (response.url && isValidUrl(response.url)) {
                 try {
                     // Clean the URL before sending
                     const cleanUrl = cleanAmazonUrl(response.url);
-
+                    setAmazonUrl(cleanUrl);
                     // Step 1: Use async/await with axios.post
-<<<<<<< HEAD
-                    const res = await axios.post('http://localhost:3001/scrape', { url: response.url });
-=======
                     const res = await axios.post('https://localhost:3001/scrape', { url: cleanUrl });
->>>>>>> 524c21d2ff01ff134456c764841bafeb0fe3fc75
                     console.log('URL sent successfully:', res.data);
     
                     // Step 2: Extract the "overall_ratings" value
@@ -131,14 +131,14 @@ function Extension() {
     return (
         <Container.Outer className="flex flex-col min-h-screen" showIcon={true} showHeader={true} customStyles={{ minWidth: '300px', width: '100%', maxWidth: '400px', margin: '0 auto', maxHeight: '400px'}}>
             <Container.Inner className="flex flex-col flex-grow p-4" customStyles={{ padding: 40, borderRadius: '3rem', minHeight: '350px', maxHeight: '350px' }}>
-                <Button onClick={onClick} text="Scan comments now!" className="w-full py-4 text-xl font-bold text-white rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-blue-300" />
+                <Button  disabled={disableButton} onClick={onClick} text="Scan comments now!" className="w-full py-4 text-xl font-bold text-white rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-blue-300" />
                 <Divider />
                 <div className="flex-grow">
                     {loading ? <Loader /> : <Response response={response} />}
                     <Rating rating={overallRatings} />
                 </div>
                 <div className="mt-auto">
-                    <Bottom />
+                    <Bottom tabURL={amazonUrl}/>
                 </div>
             </Container.Inner>
             <Footer />
