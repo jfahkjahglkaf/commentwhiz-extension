@@ -79,7 +79,7 @@ function Extension() {
                     const cleanUrl = cleanAmazonUrl(response.url);
                     setAmazonUrl(cleanUrl);
                     // Step 1: Use async/await with axios.post
-                    const res = await axios.post('https://localhost:3001/scrape', { url: cleanUrl });
+                    const res = await axios.post('https://localhost:3001/api/scrape', { url: cleanUrl });
                     console.log('URL sent successfully:', res.data);
     
                     // Step 2: Extract the "overall_ratings" value
