@@ -31,7 +31,7 @@ function Extension() {
             if (response.url) {
                 const url = response.url;
                 const isAmazonProductPage = /^https?:\/\/(www\.)?amazon\.[a-z\.]{2,6}(\/d\/|\/dp\/|\/gp\/product\/)/.test(url);
-                //const isProductPage = /\/(\d+|[a-z0-9-]+)$/.test(url);  // work in progress for other product pages (e.g. ebay, walmart, etc.)
+                //const isProductPage = /\/(\d+|[a-z0-9-]+)$/.test(url);  // work in progress for other product pages (e.g. ebay, walmart, etc.) 
                 const disableButton = !isAmazonProductPage;
                 return disableButton;
             }
