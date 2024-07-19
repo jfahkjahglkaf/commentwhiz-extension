@@ -13,18 +13,29 @@ import axios from "axios";
 function Extension() {
     const [loading, setLoading] = useState(false);
     const [response, setResponse] = useState("");
-    useEffect(() => {}, [loading, response]);
     const [overallRatings, setOverallRatings] = useState(null);
     const [amazonUrl, setAmazonUrl] = useState(null);
-    console.log("Rendering Extension1");
+    const [isButtonDisabled, setIsButtonDisabled] = useState(true);
+
+    useEffect(() => {
+        const checkIfButtonShouldBeDisabled = async () => {
+            try {
+                const result = await disableButton();
+                setIsButtonDisabled(result);
+            } catch (error) {
+                console.error("Failed to get current tab URL", error);
+                setIsButtonDisabled(true);
+            }
+        };
+        checkIfButtonShouldBeDisabled();
+    }, []);
 
     function isValidUrl(url) {
         try {
-          const parsedUrl = new URL(url);
-          return parsedUrl.protocol === 'http:' || parsedUrl.protocol === 'https:';
+            const parsedUrl = new URL(url);
+            return parsedUrl.protocol === 'http:' || parsedUrl.protocol === 'https:';
         } catch (error) {
-          // The URL constructor throws a TypeError if the URL is invalid
-          return false;
+            return false;
         }
     }
 
@@ -33,8 +44,11 @@ function Extension() {
             chrome.runtime.sendMessage({ action: 'getCurrentTabUrl' }, (response) => {
                 if (response.url) {
                     const url = response.url;
-                    const isAmazonPage = /^https?:\/\/(www\.)?amazon\.[a-z\.]{2,6}(\/d\/|\/dp\/|\/gp\/product\/)/.test(url);
-                    resolve(!isAmazonPage); // Resolve the promise with true or false
+                    const urlObj = new URL(url);
+                    const hostname = urlObj.hostname;
+                    const isAmazonPage = hostname.includes('amazon');
+                    const isShopeePage = hostname.includes('shopee');
+                    resolve(!(isAmazonPage || isShopeePage));
                 } else {
                     reject(new Error("Failed to get current tab URL"));
                 }
@@ -42,50 +56,64 @@ function Extension() {
         });
     }
 
-    function cleanAmazonUrl(url) {
+    function cleanProductUrl(url) {
         try {
-            // Create a URL object
-            let urlObj = new URL(url);
+            const urlObj = new URL(url);
+            const hostname = urlObj.hostname;
 
-            // Extract the path parts
-            let pathParts = urlObj.pathname.split('/');
-
-            // Find the ASIN (usually after "/dp/")
-            let asinIndex = pathParts.indexOf('dp');
-            if (asinIndex === -1 || asinIndex + 1 >= pathParts.length) {
-                throw new Error("ASIN not found");
+            if (hostname.includes('amazon')) {
+                return cleanAmazonUrl(urlObj);
+            } else if (hostname.includes('shopee')) {
+                return cleanShopeeUrl(urlObj);
             }
 
-            let asin = pathParts[asinIndex + 1];
-
-            // Construct the clean URL
-            let cleanUrl = `${urlObj.origin}/dp/${asin}`;
-
-            return cleanUrl;
+            return url;
         } catch (error) {
             console.error(error.message);
-            return url;  // Return the original URL if an error occurs
+            return url;
         }
+    }
+
+    function cleanAmazonUrl(urlObj) {
+        let pathParts = urlObj.pathname.split('/');
+        let asinIndex = pathParts.indexOf('dp');
+        if (asinIndex === -1 || asinIndex + 1 >= pathParts.length) {
+            throw new Error("ASIN not found");
+        }
+
+        let asin = pathParts[asinIndex + 1];
+        let cleanUrl = `${urlObj.origin}/dp/${asin}`;
+
+        return cleanUrl;
+    }
+
+    function cleanShopeeUrl(urlObj) {
+        let pathname = urlObj.pathname;
+        let match = pathname.match(/i\.(\d+)\.(\d+)/);
+        if (match) {
+            let shopId = match[1];
+            let itemId = match[2];
+            return `${urlObj.origin}/product/${shopId}/${itemId}`;
+        }
+
+        return urlObj.href;
     }
 
     const runScrapingScript = async () => {
         setOverallRatings(null);
         setResponse("");
         setLoading(true);
-        chrome.runtime.sendMessage({ action: 'getCurrentTabUrl' }, async (response) => { 
+        chrome.runtime.sendMessage({ action: 'getCurrentTabUrl' }, async (response) => {
             if (response.url && isValidUrl(response.url)) {
                 try {
-                    // Clean the URL before sending
-                    const cleanUrl = cleanAmazonUrl(response.url);
+                    const cleanUrl = cleanProductUrl(response.url);
                     setAmazonUrl(cleanUrl);
-                    // Step 1: Use async/await with axios.post
                     const res = await axios.post('https://localhost:3001/api/scrape', { url: cleanUrl });
                     console.log('URL sent successfully:', res.data);
-    
-                    // Step 2: Extract the "overall_ratings" value
+
                     const Enhanced_Rating = res.data['Enhanced Rating'];
                     if (Enhanced_Rating !== undefined) {
-                        setOverallRatings(Enhanced_Rating); // Step 3: Store the value
+                        setOverallRatings(Enhanced_Rating);
                     }
                     if (res.data['reviews'] !== undefined) {
                         const openAiApiKey = process.env.REACT_APP_OPENAI_API_KEY;
@@ -94,51 +122,46 @@ function Extension() {
                         const resp = await axios.post('https://api.openai.com/v1/engines/gpt-3.5-turbo-instruct/completions', {
                             prompt,
                             max_tokens: 150
-                          }, 
-                          {
-                            headers: {
-                              'Authorization': `Bearer ${openAiApiKey}`,
-                              'Content-Type': 'application/json'
-                            }
-                          });
-                          if (resp.data && resp.data.choices && resp.data.choices.length > 0) {
-                            const plainTextResponse = resp.data.choices[0].text.trim(); //extract plaintext and trims trailing whitespace
+                        },
+                            {
+                                headers: {
+                                    'Authorization': `Bearer ${openAiApiKey}`,
+                                    'Content-Type': 'application/json'
+                                }
+                            });
+                        if (resp.data && resp.data.choices && resp.data.choices.length > 0) {
+                            const plainTextResponse = resp.data.choices[0].text.trim();
                             setLoading(false);
-                            setResponse(plainTextResponse); // Store the plain text response
-                            } 
-                            else {
-                                console.error('No response text found');
-                                setLoading(false);
-                                setResponse('No response text found');
-                            }
+                            setResponse(plainTextResponse);
+                        } else {
+                            console.error('No response text found');
+                            setLoading(false);
+                            setResponse('No response text found');
+                        }
                     }
                 } catch (err) {
                     setLoading(false);
                     setResponse(err);
-
                 }
             }
         });
     };
-    
+
     const onClick = () => {
         runScrapingScript();
-        // add integration parts  
-    } 
-
-    console.log("Rendering Extension2");
+    };
 
     return (
-        <Container.Outer className="flex flex-col min-h-screen" showIcon={true} showHeader={true} customStyles={{ minWidth: '300px', width: '100%', maxWidth: '400px', margin: '0 auto', maxHeight: '400px'}}>
+        <Container.Outer className="flex flex-col min-h-screen" showIcon={true} showHeader={true} customStyles={{ minWidth: '300px', width: '100%', maxWidth: '400px', margin: '0 auto', maxHeight: '400px' }}>
             <Container.Inner className="flex flex-col flex-grow p-4" customStyles={{ padding: 40, borderRadius: '3rem', minHeight: '350px', maxHeight: '350px' }}>
-                <Button  disabled={disableButton} onClick={onClick} text="Scan comments now!" className="w-full py-4 text-xl font-bold text-white rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-blue-300" />
+                <Button isdisabled={isButtonDisabled} onClick={onClick} text="Scan comments now!" className="w-full py-4 text-xl font-bold text-white rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-blue-300" />
                 <Divider />
                 <div className="flex-grow">
                     {loading ? <Loader /> : <Response response={response} />}
                     <Rating rating={overallRatings} />
                 </div>
                 <div className="mt-auto">
-                    <Bottom tabURL={amazonUrl}/>
+                    <Bottom tabURL={amazonUrl} />
                 </div>
             </Container.Inner>
             <Footer />
