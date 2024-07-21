@@ -99,6 +99,7 @@ function Extension() {
         return urlObj.href;
     }
 
+    let cleanUrl = null;
     const runScrapingScript = async () => {
         setOverallRatings(null);
         setResponse("");
@@ -106,45 +107,61 @@ function Extension() {
         chrome.runtime.sendMessage({ action: 'getCurrentTabUrl' }, async (response) => {
             if (response.url && isValidUrl(response.url)) {
                 try {
-                    const cleanUrl = cleanProductUrl(response.url);
+                    cleanUrl = cleanProductUrl(response.url);
                     setAmazonUrl(cleanUrl);
-                    const res = await axios.post('https://localhost:3001/api/scrape', { url: cleanUrl });
+                    const res = await axios.post('https://localhost:3001/scrape', { url: cleanUrl });
                     console.log('URL sent successfully:', res.data);
 
-                    const Enhanced_Rating = res.data['Enhanced Rating'];
-                    if (Enhanced_Rating !== undefined) {
-                        setOverallRatings(Enhanced_Rating);
-                    }
-                    if (res.data['reviews'] !== undefined) {
-                        const openAiApiKey = process.env.REACT_APP_OPENAI_API_KEY;
-                        const reviews = res.data['reviews'];
-                        const prompt = `Analyze the following comments for the product at ${response.url} and provide a summary and recommendation: ${reviews}`;
-                        const resp = await axios.post('https://api.openai.com/v1/engines/gpt-3.5-turbo-instruct/completions', {
-                            prompt,
-                            max_tokens: 150
-                        },
-                            {
-                                headers: {
-                                    'Authorization': `Bearer ${openAiApiKey}`,
-                                    'Content-Type': 'application/json'
-                                }
-                            });
-                        if (resp.data && resp.data.choices && resp.data.choices.length > 0) {
-                            const plainTextResponse = resp.data.choices[0].text.trim();
+                    
+                    const exisiting_summary = res.data.aiSummary?.['shortSummary'];
+                 
+                    const generated_summary = res.data.reactResponse?.aiSummary['shortSummary'];
+                   
+
+                    if (exisiting_summary !== undefined) {
+                        setResponse(exisiting_summary);
+                        
+                        const Enhanced_Rating = res.data.summary['Enhanced Rating'];
+                        if (Enhanced_Rating !== undefined) {
+                            setOverallRatings(Enhanced_Rating);
                             setLoading(false);
-                            setResponse(plainTextResponse);
-                        } else {
-                            console.error('No response text found');
-                            setLoading(false);
-                            setResponse('No response text found');
                         }
                     }
+                    else if (generated_summary !== undefined) {
+                        setResponse(generated_summary);
+                        
+
+                        // Start checking the database
+                        checkDatabaseRepeatedly();
+                        
+                    }
+
                 } catch (err) {
                     setLoading(false);
-                    setResponse(err);
+                    setResponse(err.massage);
                 }
             }
         });
+    };
+
+    const checkDatabaseRepeatedly = () => {
+        const interval = setInterval(async () => {
+            try {
+                const res = await axios.post('https://localhost:3001/checkReport', { url: cleanUrl });
+               
+                if (res.status !== 404) {
+                   
+                    const Enhanced_Rating = res.data.summary['Enhanced Rating'];
+                    if (Enhanced_Rating !== undefined) {
+                        setOverallRatings(Enhanced_Rating);
+                        setLoading(false);
+                    }
+                    clearInterval(interval);
+                }
+            } catch (error) {
+                console.error('Error checking database:', error);
+            }
+        }, 3000); // Check every 3 seconds
     };
 
     const onClick = () => {
@@ -156,12 +173,19 @@ function Extension() {
             <Container.Inner className="flex flex-col flex-grow p-4" customStyles={{ padding: 40, borderRadius: '3rem', minHeight: '350px', maxHeight: '350px' }}>
                 <Button isdisabled={isButtonDisabled} onClick={onClick} text="Scan comments now!" className="w-full py-4 text-xl font-bold text-white rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-blue-300" />
                 <Divider />
-                <div className="flex-grow">
-                    {loading ? <Loader /> : <Response response={response} />}
+                <div className="flex-grow flex flex-col">
+                    <div className="flex flex-col space-y-4"> {/* Changed this wrapper div */}
+                        <div className="flex-1">
+                            {loading && <Loader />} {/* Loader inside a div with flex-1 */}
+                        </div>
+                        <div className="flex-1">
+                            <Response response={response} /> {/* Response inside a div with flex-1 */}
+                        </div>
+                    </div>
                     <Rating rating={overallRatings} />
                 </div>
                 <div className="mt-auto">
-                    <Bottom tabURL={amazonUrl} />
+                    <Bottom tabURL={amazonUrl} overallRatings={overallRatings} />
                 </div>
             </Container.Inner>
             <Footer />
