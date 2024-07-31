@@ -170,21 +170,14 @@ function Extension() {
 
     return (
         <Container.Outer className="flex flex-col min-h-screen" showIcon={true} showHeader={true} customStyles={{ minWidth: '300px', width: '100%', maxWidth: '400px', margin: '0 auto', maxHeight: '400px' }}>
-            <Container.Inner className="flex flex-col flex-grow p-4" customStyles={{ padding: 40, borderRadius: '3rem', minHeight: '350px', maxHeight: '350px' }}>
+            <Container.Inner className="flex flex-col flex-grow" customStyles={{ paddingTop: 15, paddingLeft: 20, paddingRight: 20, paddingBottom: 20, borderRadius: '3rem', overflowY: 'auto' }}>
                 <Button isdisabled={isButtonDisabled} onClick={onClick} text="Scan comments now!" className="w-full py-4 text-xl font-bold text-white rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-blue-300" />
                 <Divider />
-                <div className="flex-grow flex flex-col">
-                    <div className="flex flex-col space-y-4"> {/* Changed this wrapper div */}
-                        <div className="flex-1">
-                            {loading && <Loader />} {/* Loader inside a div with flex-1 */}
-                        </div>
-                        <div className="flex-1">
-                            <Response response={response} /> {/* Response inside a div with flex-1 */}
-                        </div>
-                    </div>
+                <div className="flex flex-col space-y-2">
+                    {loading ? <Loader /> : <Response response={response} />}
                     <Rating rating={overallRatings} />
                 </div>
-                <div className="mt-auto">
+                <div>
                     <Bottom tabURL={amazonUrl} overallRatings={overallRatings} />
                 </div>
             </Container.Inner>

@@ -5,7 +5,7 @@ export function Button({ onClick, text, className, isdisabled }) {
     
     return (
         <button
-            className={`relative px-4 py-2 text-sm font-medium bg-custom-blue text-white border-2 rounded-lg transition hover:bg-custom-lightblue ${disabledClasses} ${className}`}
+             className={`relative px-4 py-2 text-sm font-medium bg-custom-blue text-white border-2 rounded-3rem transition hover:bg-custom-lightblue ${disabledClasses} ${className}`}
             onClick={onClick}
             disabled={isdisabled}
         >
