@@ -131,7 +131,7 @@ function Extension() {
 
                     if (exisiting_summary !== undefined) {
                         setResponse(exisiting_summary);
-                        
+    
                         const Positive_Rating = res.data.summary['Percentage of Positive Reviews'];
                         const Negative_Rating = res.data.summary['Percentage of Negative Reviews'];
                         const Neutral_Rating = res.data.summary['Percentage of Neutral Reviews'];
@@ -193,10 +193,11 @@ function Extension() {
     return (
         <Container.Outer className="flex flex-col min-h-screen" showIcon={true} showHeader={true} customStyles={{ minWidth: '300px', width: '100%', maxWidth: '400px', margin: '0 auto', maxHeight: '400px' }}>
             <Container.Inner className="flex flex-col flex-grow" customStyles={{ paddingTop: 15, paddingLeft: 20, paddingRight: 20, paddingBottom: 20, borderRadius: '1rem', overflowY: 'auto' }}>
-                <Button isdisabled={isButtonDisabled} onClick={onClick} text="Scan comments now!" className="w-full py-4 text-xl font-bold text-white rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-blue-300" />
+                <Button isdisabled={isButtonDisabled} onClick={onClick} text="Scan Comments!" className="w-full py-4 text-xl font-bold text-white rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-blue-300" />
                 <div className="flex flex-col space-y-2">
-                    {loading ? <Loader /> : response && <Response response={response} />}
-                    <Rating rating={overallRatings} data={data} chartId="Positivity Chart"/>
+                    {response && <Response response={response} />}
+                    {loading && <Loader />}
+                    <Rating rating={overallRatings} data={data} chartId="Positivity Chart" />
                 </div>
                 <div>
                     <Bottom tabURL={amazonUrl} overallRatings={overallRatings} />

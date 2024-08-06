@@ -76,17 +76,17 @@ export function Rating({ data, rating, chartOptions, chartId }) {
         if (rating === 0) {
             return '#000000'; // Black for ratings that are 0
         } else if (rating < 50) {
-            return '#FF0000'; // Red for ratings below 50
+            return '#000000'; // Red for ratings below 50
         } else if (rating >= 50 && rating <= 75) {
-            return '#FFFF00'; // Yellow for ratings between 50 and 75
+            return '#000000'; // Yellow for ratings between 50 and 75
         } else {
-            return '#357a38'; // Green for ratings above 75
+            return '#000000'; // Green for ratings above 75
         }
     };
     
     const textStyle = {
         alignSelf: 'flex-start', // Align text to the left
-        fontSize: '0.8em', // Change font size to half
+        fontSize: '1em', // Change font size to half
         color: getColorBasedOnRating(rating), // Change text color
         fontFamily: 'Caveat, sans-serif', // Change font family
     };

@@ -18,9 +18,15 @@ export function Bottom({ tabURL, overallRatings }) {
                     <div className="h-3 w-3"></div>
                 )}
                 <div className="flex space-x-4">
-                    <a href="/home" className="text-black"><FaHome size="2em" className="text-gray-700" /></a>
-                    <a href="/info" className="text-black"><FaInfoCircle size="2em" className="text-gray-700" /></a>
-                    <a href="/settings" className="text-black"><FaCog size="2em" className="text-gray-700" /></a>
+                    <a href="https://localhost:3000" target="_blank" rel="noopener noreferrer" className="text-black">
+                        <FaHome size="2em" className="text-gray-700" />
+                    </a>
+                    <a href="https://localhost:3000/features" target="_blank" rel="noopener noreferrer" className="text-black">
+                        <FaInfoCircle size="2em" className="text-gray-700" />
+                    </a>
+                    <a href="#" className="text-black">
+                        <FaCog size="2em" className="text-gray-700" />
+                    </a>
                 </div>
             </div>
         </div>

@@ -19,8 +19,8 @@ const OuterContainer = forwardRef(function OuterContainer(
                     )}
                     {showHeader && (
                         <h1 className="text-3xl font-bold">
-                            <span className="text-white">Comment</span>
-                            <span className="text-black" style={{ marginLeft: '6px' }}>Whiz</span>
+                            <span className="text-white">COMMENT</span>
+                            <span className="text-stone-950" style={{ marginLeft: '6px' }}>WHIZ</span>
                         </h1>
                     )}
                 </div>
