@@ -6,7 +6,7 @@ export function Divider() {
 			</div>
 			<div className="relative flex justify-start">
 				<span className="bg-grey-200 pr-3 text-md font-medium text-gray-700">
-					Report:
+					Summary:
 				</span>
 			</div>
 		</div>

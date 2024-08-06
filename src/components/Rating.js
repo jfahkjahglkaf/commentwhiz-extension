@@ -1,70 +1,113 @@
-import React from 'react';
-import { PieChart, Pie, Cell, Tooltip } from 'recharts';
+import React, { useEffect, useRef } from 'react';
+import * as echarts from 'echarts/core';
+import {
+    TooltipComponent,
+    LegendComponent,
+    TitleComponent
+} from 'echarts/components';
+import { PieChart } from 'echarts/charts';
+import { CanvasRenderer } from 'echarts/renderers';
+import { LabelLayout } from 'echarts/features';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faArrowUp } from '@fortawesome/free-solid-svg-icons';
 
-export function Rating({ rating }) {
-    if (rating !== null) {
-        const pieChartData = [
-            { name: 'Rating', value: rating },
-            { name: 'Remaining', value: 5 - rating },
-        ];
+echarts.use([
+    TooltipComponent,
+    LegendComponent,
+    TitleComponent,
+    PieChart,
+    CanvasRenderer,
+    LabelLayout
+]);
 
-        const COLORS = ['#4CAF50', '#C13C37'];
+export function Rating({ data, rating, chartOptions, chartId }) {
+    const chartRef = useRef(null);
 
-        const containerStyle = {
-            display: 'flex',
-            flexDirection: 'row',
-            alignItems: 'center',
-        };
+    useEffect(() => {
+        if (rating !== null && rating !== 0) {
+            const myChart = echarts.init(chartRef.current);
 
-        const pieChartStyle = {
-            width: '100px', // Adjust width as needed
-            height: '100px', // Adjust height as needed
-        };
+            // Calculate the total sum of the values
+            const total = data.reduce((sum, item) => sum + item.value, 0);
 
-        const ratingTextStyle = {
-            marginLeft: '10px',
-            fontSize: '16px',
-            color: '#333',
-        };
+            // Find the largest value
+            const positiveValue = data.find((item) => item.name === 'Positive')?.value;
 
-        const renderCustomTooltip = ({ active, payload }) => {
-            if (active && payload && payload.length) {
-                const data = payload[0].payload;
-                return (
-                    <div className="custom-tooltip bg-white p-2 border border-gray-300 rounded shadow">
-                        <p className="label text-sm">{`${data.value.toFixed(1)}`}</p>
-                    </div>
-                );
-            }
+            // Calculate the percentage of the largest value
+            const percentage = ((positiveValue / total) * 100).toFixed(2);
 
-            return null;
-        };
+            const defaultOptions = {
+                title: {
+                    text: `${percentage}% \nPositive`,
+                    left: 'center',
+                    top: 'center',
+                    textStyle: {
+                        fontSize: 10,
+                        fontWeight: 'bold',
+                        color: '#333'
+                    }
+                },
+                series: [
+                    {
+                        type: 'pie',
+                        radius: ['60%', '70%'],
+                        data: data,
+                        color: ['#545454', '#d12e2e','#81FF03']
+                    }
+                ]
+            };
 
-        return (
-            <div style={containerStyle}>
-                {/* Display Pie Chart */}
-                <PieChart width={100} height={100} style={pieChartStyle}>
-                    <Pie
-                        data={pieChartData}
-                        cx="50%"
-                        cy="50%"
-                        outerRadius={40}
-                        fill="#8884d8"
-                        dataKey="value"
-                    >
-                        {pieChartData.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                    </Pie>
-                    <Tooltip content={renderCustomTooltip} />
-                </PieChart>
-                {/* Display Numeric Rating */}
-                <p style={ratingTextStyle}>Rating: {rating} / 5</p>
-            </div>
-        );
-    }
+            const options = { ...defaultOptions, ...chartOptions };
+            myChart.setOption(options);
 
-    return <p>No rating available</p>;
-};
+            return () => {
+                myChart.dispose();
+            };
+        }
+    }, [rating, data, chartOptions]); // Dependencies now include `rating`
+    
+    const containerStyle = {
+        display: 'flex',
+        flexDirection: 'column', // Change to column to stack elements vertically
+        alignItems: 'center',
+    };
+
+    const getColorBasedOnRating = (rating) => {
+        if (rating === 0) {
+            return '#000000'; // Black for ratings that are 0
+        } else if (rating < 50) {
+            return '#FF0000'; // Red for ratings below 50
+        } else if (rating >= 50 && rating <= 75) {
+            return '#FFFF00'; // Yellow for ratings between 50 and 75
+        } else {
+            return '#357a38'; // Green for ratings above 75
+        }
+    };
+    
+    const textStyle = {
+        alignSelf: 'flex-start', // Align text to the left
+        fontSize: '0.8em', // Change font size to half
+        color: getColorBasedOnRating(rating), // Change text color
+        fontFamily: 'Caveat, sans-serif', // Change font family
+    };
+
+    return (
+        <div style={containerStyle}>
+            {rating !== null && (
+                <p style={textStyle}>
+                    {rating === 0 ? (
+                        <>
+                            Use the button to scan comments!
+                            <FontAwesomeIcon icon={faArrowUp} style={{ marginLeft: '6px' }} />
+                        </>
+                    ) : (
+                        "Overall Comment Sentiment"
+                    )}
+                </p>
+            )}
+            <div id={chartId} ref={chartRef} style={{ width: '100%', height: '100px' }}></div>
+        </div>
+    );
+}
 
 export default Rating;

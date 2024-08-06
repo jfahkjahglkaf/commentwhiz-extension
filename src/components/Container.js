@@ -5,19 +5,30 @@ const OuterContainer = forwardRef(function OuterContainer(
     { className, children, customStyles, showIcon, showHeader, headerText, ...props },
     ref
 ) {
+    const containerStyle = {
+        fontFamily: 'Monaco, monospace', // Change this to any default font you prefer
+        ...customStyles,
+    };
+
     return (
-        <div ref={ref} className={clsx("sm:px-8", className)} style={customStyles} {...props}>
-            {showIcon && (
-                <img src={process.env.PUBLIC_URL + '/ext-icon.png'} alt="logo" className="w-10 h-10 mx-auto mt-2" />
+        <div ref={ref} className={clsx("sm:px-8", className)} style={containerStyle} {...props}>
+            {(showIcon || showHeader) && (
+                <div className="flex items-center justify-center space-x-2 mt-2">
+                    {showIcon && (
+                        <img src={process.env.PUBLIC_URL + '/logoWhite.png'} alt="logo" className="w-10 h-10" />
+                    )}
+                    {showHeader && (
+                        <h1 className="text-3xl font-bold">
+                            <span className="text-white">Comment</span>
+                            <span className="text-black" style={{ marginLeft: '6px' }}>Whiz</span>
+                        </h1>
+                    )}
+                </div>
             )}
-            {showHeader && (
-                <h1 className="text-center text-3xl font-bold">{headerText || "CommentWhiz"}</h1>
-            )}
-           <div className="mx-3 rounded">{children}</div>
+            <div className="mx-3">{children}</div>
         </div>
     );
 });
-
 
 const InnerContainer = forwardRef(function InnerContainer(
     { className, children, customStyles, flexDirection = "flex-col", ...props },
